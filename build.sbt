@@ -9,7 +9,7 @@ version := "0.1-SNAPSHOT"
 
 organization := "com.doors"
 
-ThisBuild / scalaVersion := "2.11.12"
+ThisBuild / scalaVersion := "2.12.1"
 
 val flinkVersion = "1.7.0"
 
@@ -22,7 +22,7 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= flinkDependencies
   )
 
-assembly / mainClass := Some("com.doors.Job")
+assembly / mainClass := Some("com.doors.WordCount")
 
 // make run command include the provided dependencies
 Compile / run  := Defaults.runTask(Compile / fullClasspath,
