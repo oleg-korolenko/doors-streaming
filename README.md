@@ -11,7 +11,7 @@ Flink cluster with Kafka is containerized so latest available **Docker** needed 
 
 Build and package the Flink job to a fat jar:
 
-`sbt package`
+`sbt assembly`
 
 Start docker-compose with Flink and Kafka:
 
@@ -24,7 +24,7 @@ Get the id of Flink job manager container:
 
 Copy the jar to the container:
 
-`docker cp target/scala-2.12/doors-exercise_2.12-0.1-SNAPSHOT.jar "$JOBMANAGER_CONTAINER":/job.jar`
+`docker cp target/scala-2.12/doors-exercise-job.jar "$JOBMANAGER_CONTAINER":/job.jar`
 
 
 Run the job 

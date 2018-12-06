@@ -13,9 +13,13 @@ ThisBuild / scalaVersion := "2.12.1"
 
 val flinkVersion = "1.7.0"
 
+
+
 val flinkDependencies = Seq(
   "org.apache.flink" %% "flink-scala" % flinkVersion % "provided",
-  "org.apache.flink" %% "flink-streaming-scala" % flinkVersion % "provided")
+  "org.apache.flink" %% "flink-streaming-scala" % flinkVersion % "provided",
+  "org.apache.flink" % "flink-connector-kafka-base_2.12" % flinkVersion
+)
 
 lazy val root = (project in file(".")).
   settings(
@@ -36,3 +40,5 @@ Global / cancelable := true
 
 // exclude Scala library from assembly
 assembly / assemblyOption  := (assembly / assemblyOption).value.copy(includeScala = false)
+
+assemblyJarName in assembly := "doors-exercise-job.jar"
