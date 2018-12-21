@@ -18,7 +18,7 @@ val flinkVersion = "1.7.0"
 val flinkDependencies = Seq(
   "org.apache.flink" %% "flink-scala" % flinkVersion % "provided",
   "org.apache.flink" %% "flink-streaming-scala" % flinkVersion % "provided",
-  "org.apache.flink" % "flink-connector-kafka-base_2.12" % flinkVersion
+  "org.apache.flink" % "flink-connector-kafka_2.12" % flinkVersion
 )
 
 lazy val root = (project in file(".")).
@@ -26,7 +26,7 @@ lazy val root = (project in file(".")).
     libraryDependencies ++= flinkDependencies
   )
 
-assembly / mainClass := Some("com.doors.WordCount")
+assembly / mainClass := Some("com.doors.DoorsJob")
 
 // make run command include the provided dependencies
 Compile / run  := Defaults.runTask(Compile / fullClasspath,
