@@ -36,6 +36,7 @@ Check the execution in Flink UI :
 `http://localhost:8081/#/overview`
 
 
+
 #### Run the job in SBT
 
 To run and test your application locally, you can just execute `sbt run` then select the main class that contains the Flink job . 
@@ -45,3 +46,16 @@ You can also package the application into a fat jar with `sbt assembly`, then su
 ```
 flink run -c com.doors.WordCount /path/to/your/project/my-app/target/scala-2.11/testme-assembly-0.1-SNAPSHOT.jar
 ```
+
+
+#### TEMP
+
+`docker exec -it doors-flink-jobmanager bash`
+
+`~/Tools/kafka_2.11-1.0.0/bin/kafka-console-producer.sh --broker-list localhost:9092 --topic doors`
+
+
+{"doorId":1,"eventType":"in","timestamp":123456789}
+
+
+~/Tools/kafka_2.11-1.0.0/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic doors-cleaned --from-beginning
