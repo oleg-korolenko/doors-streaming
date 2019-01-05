@@ -22,18 +22,19 @@ package com.doors.jobs
 import java.util.Properties
 
 import com.doors.domain.Domain._
+import com.doors.generators.DoorGenerators
+import com.doors.generators.DoorGenerators._
 import com.doors.sinks.DoorSinks._
 import com.doors.sources.DoorEventSource
 import com.doors.transformations.PerDoorAggregation
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.flink.streaming.api.TimeCharacteristic
-import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows
 import org.apache.flink.streaming.api.windowing.time.Time
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow
-import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaConsumer, FlinkKafkaProducer}
-import org.apache.flink.streaming.util.serialization.{JSONKeyValueDeserializationSchema, KeyedSerializationSchema}
+import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
+import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserializationSchema
 import org.apache.flink.util.Collector
 import org.apache.flink.streaming.api.scala._
 
@@ -47,7 +48,6 @@ object DoorsJob {
   private val KAFKA_GROUP_ID = "flink"
   private val KAFKA_SERVER = "kafka:9092"
   //  private val KAFKA_SERVER = "localhost:9092"
-
 
   private val WINDOW_SIZE = Time.seconds(10)
 
@@ -64,7 +64,9 @@ object DoorsJob {
     // generation stream to kafka input
     val doorsGenerationStream =
       env
-        .addSource(DoorEventSource()).name("Doors generation input stream")
+        .addSource(
+          DoorEventSource())
+            .name("Doors generation input stream")
         .addSink(createDoorsSink(props)(DOORS_INPUT_TOPIC)).name("Doors generation sink")
 
     // to not generate out-of-order

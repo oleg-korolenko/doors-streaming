@@ -16,6 +16,8 @@ object Domain {
 
   final case class DoorEvent(doorId: Int, eventType: DoorEventType, timestamp: Long) extends Serializable
 
+  final  val DOORS_NUMBER = 200
+  final  val ALL_DOORS_RANGE = 1 to DOORS_NUMBER
 
   type PerDoorCountsWithEndTime = (PerDoorCounts, Long)
 

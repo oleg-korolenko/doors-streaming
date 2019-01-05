@@ -12,54 +12,28 @@ import scala.util.Random
 
 final case class EventsPerDoor(events: Array[DoorEvent])
 
+
 object DoorGenerators {
-  val DOORS_COUNT = 200
 
+  final case class GeneratorCfg(maxDelayMSecs: Long = 100)
 
-  val allDoors = () => {
-    val now = System.currentTimeMillis()
+  type DoorId = Int
 
-    val chooseEventType = choiceSeq[DoorEventType](Seq[DoorEventType](DoorEventType.in, DoorEventType.out))
-    val rand = new Random
-
-    var currentEventTs = now
-    (1 to 1).flatMap {
-      id => {
-        // within 1 sec range
-        currentEventTs = someLongWithin((currentEventTs, currentEventTs + 10000))
-        val event = DoorEvent(id, chooseEventType(rand), currentEventTs)
-
-        // within 1 sec range
-        currentEventTs = someLongWithin((currentEventTs, currentEventTs + 10000))
-        val event2 = DoorEvent(id, chooseEventType(rand), currentEventTs)
-
-        List(event, event2)
-      }
-    }
-  }
+  type DoorGenerator = GeneratorCfg => DoorId => DoorEvent
 
   val chooseEventType = choiceSeq[DoorEventType](Seq[DoorEventType](DoorEventType.in, DoorEventType.out))
 
-/*
-  case class GeneratorPattern(betweenEvents)
-  val randomDoors = () => {
 
+  /**
+    * Default Generator with
+    * random delay within maxDelayMSecs parameter
+    * Event type 50% IN/OUT
+    */
+  val   defaultGenerator: DoorGenerator = (cfg: GeneratorCfg) => (id: DoorId) => {
     val rand = new Random
-
-    ()=> {
-      var currentEventTs = System.currentTimeMillis()
-      val someDoorId  = someIntIn(200)
-
-      // within 1 sec range
-      currentEventTs = someLongWithin((currentEventTs, currentEventTs + 10000))
-      val event = DoorEvent(id, chooseEventType(rand), currentEventTs)
-
-      // within 1 sec range
-      currentEventTs = someLongWithin((currentEventTs, currentEventTs + 10000))
-      val event2 = DoorEvent(id, chooseEventType(rand), currentEventTs)
-
-    }*/
-
-
+    val now = System.currentTimeMillis()
+    val eventTimeStamp = someLongWithin((now, now + cfg.maxDelayMSecs))
+    DoorEvent(id, chooseEventType(rand),eventTimeStamp)
+  }
 
 }
