@@ -27,6 +27,7 @@ import com.doors.sources.DoorEventSource
 import com.doors.transformations.PerDoorAggregation
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.flink.streaming.api.TimeCharacteristic
+import org.apache.flink.streaming.api.functions.timestamps.AscendingTimestampExtractor
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
 import org.apache.flink.streaming.api.windowing.assigners.SlidingEventTimeWindows
 import org.apache.flink.streaming.api.windowing.time.Time
@@ -35,7 +36,6 @@ import org.apache.flink.streaming.connectors.kafka.{FlinkKafkaConsumer, FlinkKaf
 import org.apache.flink.streaming.util.serialization.{JSONKeyValueDeserializationSchema, KeyedSerializationSchema}
 import org.apache.flink.util.Collector
 import org.apache.flink.streaming.api.scala._
-
 
 import scala.util.Try
 
@@ -76,9 +76,6 @@ object DoorsJob {
       new JSONKeyValueDeserializationSchema(true),
       props
     )
-    // kafkaSource.assignTimestampsAndWatermarks(new AscendingTimestampExtractor[MyType] {
-    //    def extractAscendingTimestamp(element: MyType): Long = element.eventTimestamp
-    //})
 
     val doorsStream =
       env.addSource(source).name("Doors input stream")
@@ -107,22 +104,22 @@ object DoorsJob {
 
     allPerDoorCounts
       .maxBy("count")
-      .map(counts => DoorStats[PerDoorCounts]("most used door", counts))
+      .map(counts => DoorStats[PerDoorCounts](StatsType.door_most_used, counts))
       .addSink(doorStatsSink)
 
     allPerDoorCounts
       .minBy("count")
-      .map(counts => DoorStats[PerDoorCounts]("less used door", counts))
+      .map(counts => DoorStats[PerDoorCounts](StatsType.door_less_used, counts))
       .addSink(doorStatsSink)
 
     allPerDoorCounts
       .maxBy("inCount")
-      .map(counts => DoorStats[PerDoorCounts]("max ins", counts))
+      .map(counts => DoorStats[PerDoorCounts](StatsType.door_max_ins, counts))
       .addSink(doorStatsSink)
 
     allPerDoorCounts
       .maxBy("outCount")
-      .map(counts => DoorStats[PerDoorCounts]("max outs", counts))
+      .map(counts => DoorStats[PerDoorCounts](StatsType.door_max_outs, counts))
       .addSink(doorStatsSink)
 
     // per period total counts
@@ -141,13 +138,13 @@ object DoorsJob {
     totalCountPerWindow
       .windowAll(SlidingEventTimeWindows.of(Time.minutes(1), WINDOW_SIZE))
       .minBy("count")
-      .map(counts => DoorStats[TotalCounts]("the less busy window", counts))
+      .map(counts => DoorStats[TotalCounts](StatsType.less_busy_window, counts))
       .addSink(totalSink)
 
     totalCountPerWindow
       .windowAll(SlidingEventTimeWindows.of(Time.minutes(1), WINDOW_SIZE))
       .maxBy("count")
-      .map(counts => DoorStats[TotalCounts]("the busiest window", counts))
+      .map(counts => DoorStats[TotalCounts](StatsType.busiest_window, counts))
       .addSink(totalSink)
 
     env.execute("Doors Job")

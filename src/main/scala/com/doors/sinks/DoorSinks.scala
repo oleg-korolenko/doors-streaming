@@ -47,7 +47,7 @@ object DoorSinks {
         override def serializeValue(element: DoorStats[PerDoorCounts]): Array[Byte] = {
           s"""
              |
-             |{"key":"${element.key}",
+             |{"key":"${element.key.toString}",
              |"value":${element.value.json}
              }""".stripMargin.getBytes
         }
@@ -69,7 +69,7 @@ object DoorSinks {
         override def serializeValue(element: DoorStats[TotalCounts]): Array[Byte] = {
           s"""
              |
-             |{"key":"${element.key}",
+             |{"key":"${element.key.toString}",
              |"value":${element.value.json}
              }""".stripMargin.getBytes
         }

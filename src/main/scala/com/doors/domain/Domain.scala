@@ -1,6 +1,7 @@
 package com.doors.domain
 
 import com.doors.domain.Domain.DoorEventType.DoorEventType
+import com.doors.domain.Domain.StatsType.StatsType
 
 
 /**
@@ -26,7 +27,12 @@ object Domain {
 
   final case class TotalCounts(period: Period, count: Int) extends DoorStatsValue
 
-  final case class DoorStats[T](key: String, value: T)
+  final case class DoorStats[T](key: StatsType, value: T)
 
+  object StatsType extends Enumeration {
+    type StatsType = Value
+    val door_most_used, door_less_used, door_max_outs, door_max_ins,
+    less_busy_window, busiest_window = Value
+  }
 
 }
