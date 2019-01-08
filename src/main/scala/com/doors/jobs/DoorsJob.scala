@@ -50,6 +50,8 @@ object DoorsJob {
   //  private val KAFKA_SERVER = "localhost:9092"
 
   private val WINDOW_SIZE = Time.seconds(10)
+  private val TOTAL_STATS_WINDOW_SLIDE = Time.seconds(10)
+  private val TOTAL_STATS_WINDOW_SIZE = Time.minutes(1)
 
   def main(args: Array[String]) {
 
@@ -85,13 +87,6 @@ object DoorsJob {
         .filter(_.isSuccess)
         .map(_.get)
         .assignAscendingTimestamps(_.timestamp)
-
-
-    /*   val doorsDirectStream =
-         env
-           .addSource(DoorEventSource()).name("Doors generation input stream")
-           .assignAscendingTimestamps(_.timestamp)
-   */
 
     val countPerDoorStream = doorsStream
       .keyBy(_.doorId)
@@ -138,13 +133,13 @@ object DoorsJob {
       )
 
     totalCountPerWindow
-      .windowAll(SlidingEventTimeWindows.of(Time.minutes(1), WINDOW_SIZE))
+      .windowAll(SlidingEventTimeWindows.of(TOTAL_STATS_WINDOW_SIZE, TOTAL_STATS_WINDOW_SLIDE))
       .minBy("count")
       .map(counts => DoorStats[TotalCounts](StatsType.less_busy_window, counts))
       .addSink(totalSink)
 
     totalCountPerWindow
-      .windowAll(SlidingEventTimeWindows.of(Time.minutes(1), WINDOW_SIZE))
+      .windowAll(SlidingEventTimeWindows.of(TOTAL_STATS_WINDOW_SIZE, TOTAL_STATS_WINDOW_SLIDE))
       .maxBy("count")
       .map(counts => DoorStats[TotalCounts](StatsType.busiest_window, counts))
       .addSink(totalSink)
