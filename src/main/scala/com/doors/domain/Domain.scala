@@ -29,7 +29,7 @@ object Domain {
 
   final case class TotalCounts(period: Period, count: Int) extends DoorStatsValue
 
-  final case class DoorStats[T](key: StatsType, value: T)
+  final case class DoorStats[T<:DoorStatsValue](key: StatsType, value: T)
 
   object StatsType extends Enumeration {
     type StatsType = Value
