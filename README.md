@@ -26,7 +26,6 @@ Copy the jar to the container:
 
 `docker cp target/scala-2.12/doors-exercise-job.jar "$JOBMANAGER_CONTAINER":/job.jar`
 
-
 Run the job 
 
 `docker exec -t -i "$JOBMANAGER_CONTAINER" flink run /job.jar`
@@ -35,6 +34,11 @@ Check the execution in Flink UI :
 
 `http://localhost:8081/#/overview`
 
+
+#### Consult produced stats
+To check produced stats  in Kafka:
+`docker exec -t -i $(docker ps --filter name=doors-kafka --format={{.ID}}) /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic doors-stats
+` 
 
 
 #### Run the job in SBT
