@@ -11,15 +11,18 @@ organization := "com.doors"
 
 ThisBuild / scalaVersion := "2.12.1"
 
-val flinkVersion = "1.7.0"
+val flinkDependencies = {
+  val flinkVersion = "1.7.0"
 
+  Seq(
+    "org.apache.flink" %% "flink-scala" % flinkVersion % "provided",
+    "org.apache.flink" %% "flink-streaming-scala" % flinkVersion % "provided",
+    "org.apache.flink" % "flink-connector-kafka_2.12" % flinkVersion
+  )
+}
 
+libraryDependencies+="org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
-val flinkDependencies = Seq(
-  "org.apache.flink" %% "flink-scala" % flinkVersion % "provided",
-  "org.apache.flink" %% "flink-streaming-scala" % flinkVersion % "provided",
-  "org.apache.flink" % "flink-connector-kafka_2.12" % flinkVersion
-)
 
 lazy val root = (project in file(".")).
   settings(

@@ -8,17 +8,22 @@ import org.apache.flink.api.common.functions.AggregateFunction
   */
 class PerDoorAggregation
   extends AggregateFunction[DoorEvent, PerDoorCounts, PerDoorCounts] {
-  override def createAccumulator(): PerDoorCounts = PerDoorCounts("", 0, 0, 0)
+  override def createAccumulator(): PerDoorCounts = PerDoorCounts(0, 0, 0, 0)
 
   override def add(event: DoorEvent, acc: PerDoorCounts): PerDoorCounts = {
-    val inCount = if (event.eventType.equals(DoorEventType.in)) 1 else 0
-    val outCount = if (inCount == 1) 0 else 1
-    PerDoorCounts(event.doorId.toString, acc.count + 1, acc.inCount + inCount, acc.outCount + outCount)
+    if (acc.doorId == event.doorId) {
+      val inCount = if (event.eventType.equals(DoorEventType.in)) 1 else 0
+      val outCount = if (inCount == 1) 0 else 1
+      PerDoorCounts(event.doorId, acc.count + 1, acc.inCount + inCount, acc.outCount + outCount)
+    } else acc
   }
 
   override def getResult(acc: PerDoorCounts): PerDoorCounts = acc
 
   override def merge(a: PerDoorCounts, b: PerDoorCounts): PerDoorCounts = {
-    PerDoorCounts(a.doorId, a.count + b.count, a.inCount + b.inCount, a.outCount + b.outCount)
+    if (a.doorId == b.doorId) {
+      PerDoorCounts(a.doorId, a.count + b.count, a.inCount + b.inCount, a.outCount + b.outCount)
+    }
+    else a
   }
 }
