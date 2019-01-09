@@ -43,9 +43,11 @@ To check produced stats  in Kafka:
 
 #### Run the job in SBT
 
-To run and test your application locally, you can just execute `sbt run` then select the main class that contains the Flink job . 
-
-You can also package the application into a fat jar with `sbt assembly`, then submit it as usual.
+We still need to provide Kafka input/output topics for the job, to run Kafka only (without Flink containers):
+```
+docker-compose up -d -f docker-compose-only-kafka.yml up
+```
+Then to run and test your application locally, you can just execute `sbt run` then select the main class that contains the Flink job . 
 
 
  
@@ -153,7 +155,7 @@ allPerDoorCounts
       )
 ```
 
-with the result stream we can count min/max events accross different windows. Using here sliding window of 1 minute compiuted every 10 secs:
+with the result stream we can count min/max events across different windows. Using here sliding window of 1 minute compiuted every 10 secs:
 
 ```
 // one stats as example
