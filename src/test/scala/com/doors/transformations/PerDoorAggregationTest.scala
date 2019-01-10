@@ -14,7 +14,8 @@ class PerDoorAggregationTest extends FlatSpec with Matchers {
     aggregateFunction.createAccumulator() should be(PerDoorCounts(0, 0, 0, 0))
   }
 
-  "add" should "add a door IN event to  door counts" in {
+  behavior of "add"
+  it should "add a door IN event to  door counts" in {
     val event = DoorEvent(1, DoorEventType.in, 123456789l)
     val counts = PerDoorCounts(1, 2, 1, 1)
     val expectedCounts = PerDoorCounts(1, 3, 2, 1)

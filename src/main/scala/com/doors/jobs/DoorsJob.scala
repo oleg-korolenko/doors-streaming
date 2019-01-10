@@ -22,9 +22,8 @@ package com.doors.jobs
 import java.util.Properties
 
 import com.doors.domain.Domain._
-import com.doors.generators.DoorGenerators
-import com.doors.generators.DoorGenerators._
 import com.doors.sinks.DoorSinks._
+import com.doors.utils.Converters._
 import com.doors.sources.DoorEventSource
 import com.doors.transformations.PerDoorAggregation
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
@@ -38,7 +37,6 @@ import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserialization
 import org.apache.flink.util.Collector
 import org.apache.flink.streaming.api.scala._
 
-import scala.util.Try
 
 
 object DoorsJob {
@@ -146,14 +144,4 @@ object DoorsJob {
 
     env.execute("Doors Job")
   }
-
-  val toDoorEvent = (event: ObjectNode) =>
-    Try {
-      val eventVal = event.get("value")
-      DoorEvent(
-        eventVal.get("doorId").asInt(),
-        DoorEventType.withName(eventVal.get("eventType").asText()),
-        eventVal.get("timestamp").asLong()
-      )
-    }
 }
