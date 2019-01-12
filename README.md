@@ -170,4 +170,3 @@ Stats are pushed to  Kafka topic `doors-stats` in Json format.
 ## TODO
 - UI push stats to Elastic Search + Kibana for visualization
 - CEP with door patterns
-- Testing

@@ -26,6 +26,7 @@ import com.doors.sinks.DoorSinks._
 import com.doors.utils.Converters._
 import com.doors.sources.DoorEventSource
 import com.doors.transformations.PerDoorAggregation
+import org.apache.flink.api.java.utils.ParameterTool
 import org.apache.flink.shaded.jackson2.com.fasterxml.jackson.databind.node.ObjectNode
 import org.apache.flink.streaming.api.TimeCharacteristic
 import org.apache.flink.streaming.api.scala.{StreamExecutionEnvironment, _}
@@ -37,44 +38,61 @@ import org.apache.flink.streaming.util.serialization.JSONKeyValueDeserialization
 import org.apache.flink.util.Collector
 import org.apache.flink.streaming.api.scala._
 
+/**
+  * Parsed command-line config
+  **/
+case class DoorsJobConfig(
+                           kafkaSever: String,
+                           kafkaGroupId: String,
+                           kafkaTopicDoorsIn: String,
+                           kafkaTopicDoorsStats: String
+                         )
+
+object DoorsJobConfig {
+
+  def parse(args: Array[String]): DoorsJobConfig = {
+    val parameters = ParameterTool.fromArgs(args)
+
+    DoorsJobConfig(
+      parameters.get("kafkaServer", "kafka:9092"),
+      parameters.get("kafkaGroupId", "flink"),
+      parameters.get("kafkaTopicDoorsIn", "doors"),
+      parameters.get("kafkaTopicDoorsStats", "doors-stats")
+    )
+  }
+}
 
 
 object DoorsJob {
-
-  private val DOORS_INPUT_TOPIC = "doors"
-  private val DOORS_STATS_TOPIC = "doors-stats"
-  private val KAFKA_GROUP_ID = "flink"
-  private val KAFKA_SERVER = "kafka:9092"
-  //  private val KAFKA_SERVER = "localhost:9092"
-
-  private val WINDOW_SIZE = Time.seconds(10)
+  private val WINDOW_SIZE =Time.seconds(10)
   private val TOTAL_STATS_WINDOW_SLIDE = Time.seconds(10)
   private val TOTAL_STATS_WINDOW_SIZE = Time.minutes(1)
 
   def main(args: Array[String]) {
+    val config = DoorsJobConfig.parse(args)
 
     val env = StreamExecutionEnvironment.getExecutionEnvironment
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
 
     val props = new Properties()
-    props.setProperty("bootstrap.servers", KAFKA_SERVER)
-    props.setProperty("group.id", KAFKA_GROUP_ID)
+    props.setProperty("bootstrap.servers", config.kafkaSever)
+    props.setProperty("group.id", config.kafkaGroupId)
 
     // generation stream to kafka input
     val doorsGenerationStream =
       env
         .addSource(
           DoorEventSource())
-            .name("Doors generation input stream")
-        .addSink(createDoorsSink(props)(DOORS_INPUT_TOPIC)).name("Doors generation sink")
+        .name("Doors generation input stream")
+        .addSink(createDoorsSink(props)(config.kafkaTopicDoorsIn)).name("Doors generation sink")
 
     // to not generate out-of-order
     doorsGenerationStream.setParallelism(1)
 
     //main  doors processing stream
     val source = new FlinkKafkaConsumer[ObjectNode](
-      DOORS_INPUT_TOPIC,
+      config.kafkaTopicDoorsIn,
       new JSONKeyValueDeserializationSchema(true),
       props
     )
@@ -92,7 +110,7 @@ object DoorsJob {
       .aggregate(new PerDoorAggregation)
 
 
-    val doorStatsSink = createDoorStatsSink(props)(DOORS_STATS_TOPIC)
+    val doorStatsSink = createDoorStatsSink(props)(config.kafkaTopicDoorsStats)
 
     // per door counts
     val allPerDoorCounts = countPerDoorStream.timeWindowAll(WINDOW_SIZE)
@@ -118,7 +136,7 @@ object DoorsJob {
       .addSink(doorStatsSink)
 
     // per period total counts
-    val totalSink = createTotalStatsSink(props)(DOORS_STATS_TOPIC)
+    val totalSink = createTotalStatsSink(props)(config.kafkaTopicDoorsStats)
     val totalCountPerWindow = allPerDoorCounts
       .reduce(
         (ev1: PerDoorCounts, ev2: PerDoorCounts) => ev1.copy(count = ev1.count + ev2.count),
